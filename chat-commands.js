@@ -1145,6 +1145,21 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		return false;
 		break;
 
+	case 'ext':
+	case '!ext':
+	case 'info':
+	case '!info':
+		showOrBroadcastStart(user, cmd, room, socket, message);
+		showOrBroadcast(user, cmd, room, socket, '<div class="infobox">Welcome to the Pokemon DB!:<br />'+
+			'- <a href="http://pokemondb.net/" target="_blank">Pokemon DB Main Site</a><br />'+
+			'- <a href="http://pokemondb.net/pokebase/chat" target="_blank">Pokemon DB Chat</a><br />'+
+			'- <a href="http://pokemondb.net/pokebase/" target="_blank"> Pokemon DB Pokebase (Q&A)</a><br />'+
+			'- <a href="http://pokemondb.net/pokebase/meta/28174/the-db-showdown-server-is-online-ban-reports-are-welcome" target="_blank" >Pokemon DB Mod List/Banned List</a><br />'+
+			'- <a href="http://pokemondb.net/pokebase/meta/27313/database-premier-league-finished-changing-signups-finished" target="_blank">Pokemon DB Premier League</a><br />'+
+			'</div>');
+		return false;
+		break;
+
 	case 'groups':
 	case '!groups':
 		showOrBroadcastStart(user, cmd, room, socket, message);
@@ -2128,9 +2143,9 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			emit(socket, 'console', 'INFORMATIONAL COMMANDS: /data, /groups, /opensource, /avatars, /faq, /rules, /intro, /tiers, /othermetas, /learn, /analysis, /calc (replace / with ! to broadcast. (Requires: + % @ & ~))');
 			emit(socket, 'console', 'For details on all commands, use /help all');
 			if (user.group !== config.groupsranking[0]) {
-				emit(socket, 'console', 'DRIVER COMMANDS: /mute, /unmute, /announce, /forcerename, /alts')
+				emit(socket, 'console', 'TRIAL MODERATOR COMMANDS: /mute, /unmute, /announce, /forcerename, /alts')
 				emit(socket, 'console', 'MODERATOR COMMANDS: /ban, /unban, /unbanall, /ip, /modlog, /redirect, /kick');
-				emit(socket, 'console', 'LEADER COMMANDS: /promote, /demote, /forcerenameto, /namelock, /nameunlock, /forcewin, /forcetie, /declare');
+				emit(socket, 'console', 'SUPER MODERATOR COMMANDS: /promote, /demote, /forcerenameto, /namelock, /nameunlock, /forcewin, /forcetie, /declare');
 				emit(socket, 'console', 'For details on all moderator commands, use /help @');
 			}
 			emit(socket, 'console', 'For details of a specific command, use something like: /help data');
