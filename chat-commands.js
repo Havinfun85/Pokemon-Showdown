@@ -1263,6 +1263,74 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		return false;
 		break;
 		
+		case 'slots':
+	case 'spin':
+		if (!user.balance || user.balance <= 0) {
+			user.balance = 1000; 
+			user.emit('console', " Your balance was reset to $" + user.balance + "."); 
+		} 
+		var winnings = 0; 
+		var chance = Math.floor(Math.random() * 100); 
+		var chance2 = Math.floor(Math.random() * 10000); 
+		var chance3 = Math.floor(Math.random() * 1000); 
+
+		if (chance < 1) {
+			winnings += 500; 	//  1/100
+		} else if (chance < 5) { 	//  4/100
+			winnings += 300;
+		} else if (chance < 10) {	//  5/100
+			winnings += 150;
+		} else if (chance < 20) {	// 10/100
+			winnings += 100;
+		} else if (chance < 40) {	// 30/100
+			winnings += 75;
+		} else {			// 50/100
+			winnings -= 150;
+		} 
+
+		if (chance2 < 1) {
+			winnings += 10000;
+		} else if (chance2 < 10) {
+			winnings += 1000;
+		} else if (chance2 < 100) {
+			winnings += 500;
+		} else if (chance2 < 500) {
+			winnings += 200;
+		} 
+
+		if (chance3 < 1) {
+			winnings += (Math.floor(Math.random() * (1000 - 200 + 1)) + 200) * 100;
+		} 
+
+		if (!user.maxWin || winnings > user.maxWin) {
+			user.maxWin = winnings;
+		} 
+		if (!user.maxBalance || user.balance + winnings > user.maxBalance) {
+			user.maxBalance = user.balance;
+		} 
+
+		user.emit('console', 'You' + ((winnings < 0) ? " lost":" won") + " $" + Math.abs(winnings) + "!"); 
+		user.balance += winnings
+		if (user.balance <= 0) {
+			user.balance = 0; 
+			user.emit('console', 'You are out of cash!');
+		} 
+		user.emit('console', "Your Balance: $" + user.balance);
+		return false;
+		break;
+
+	case 'balance':
+		user.emit('console', 'Your current balance is $' + user.balance);
+		return false;
+		break;
+
+	case 'maxwin':
+		user.emit('console', 'The maximum you have won is $' + user.maxWin);
+		user.emit('console', 'The maximum amount of money you have held is $' + user.maxBalance);
+		return false;
+		break;
+		
+		
 	case 'riles':
 		if(user.userid === 'riles'){
 			user.avatar = 64;
