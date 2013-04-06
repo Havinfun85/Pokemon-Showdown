@@ -130,14 +130,459 @@ var crypto = require('crypto');
  *     then output it normally.
  *
  */
-
 var modlog = modlog || fs.createWriteStream('logs/modlog.txt', {flags:'a+'});
+var poofeh = true;
+var gitpulling = false;
+var imgs = true;
 var updateServerLock = false;
 
 function parseCommandLocal(user, cmd, target, room, socket, message) {
 	if (!room) return;
 	cmd = cmd.toLowerCase();
 	switch (cmd) {
+
+	// tour commands 
+	case 'changeannouncement':
+	case 'ca':
+	case 'getannouncement':
+	case 'ga':
+		if (!user.can('forcewin')) {
+			emit(socket, 'console', 'You do not have enough authority to use this command. Access denied. Get out of here peasant.');
+			return false;
+		}
+		if (!target) {
+			fs.readFile("config/announcement.txt", function(err, data) {
+				if (err) {
+					return false;
+				}
+				emit(socket, 'console', {
+					rawMessage: "<div>Announcement: <span>" + sanitize(data.toString()) + "</span></div>"
+				});
+			});
+			return false;
+		}
+		fs.writeFile("config/announcement.txt", target);
+		for (var i in Users.users) {
+			var c = Users.users[i];
+			if (c.connected) {
+				c.emit('console', {
+					rawMessage: 'The announcement was changed by ' + user.name + '.<script>$("#simheader").html("' + target.replace(/\"/g, '\\"') + '");</script>'
+				});
+			}
+		}
+		return false;
+		break;
+
+	//added - announcement stuff
+	fs.readFile('config/announcement.txt', function(err, data) {
+		if (err) return;
+		var announcement = data.toString().replace(/\"/g, '\\"');
+		emit(socket, 'console', {
+			evalRawMessage: '$("#simheader").html("' + announcement + '");'
+		});
+	});
+
+	case 'remind':
+	case '!remind':
+		var roomid = room.id;if (room.battle) {roomid = room.parentid;}
+		if (tour[roomid].status != 1) {
+			emit(socket, 'console', 'The tournament is not currently in its signup phase.');
+			return false;
+		}
+		var tourName = tour.tiers[tour[roomid].tier].name; var vowels = ["A", "E", "I", "O", "U"]; var msg = '<h2><font color="green">A' + (((vowels.indexOf(tourName.charAt(0).toUpperCase())) > -1) ? 'n ' : ' ' ) + tourName + ' Tournament is currently in its signup phase. Type</font> <font color="red">/j</font> <font color="green">to join!</font></h2>';
+		if (user.can('broadcast') && cmd.charAt(0) == "!") {
+			showOrBroadcastStart(user, cmd, room, socket, message);
+			showOrBroadcast(user, cmd, room, socket, msg);
+			return false;
+		}
+		emit(socket, 'console', {rawMessage: msg});
+		return false;
+		break;
+
+	case 'tour':
+		var roomid = room.id;if (room.battle) {roomid = room.parentid;}
+		if (!user.can('broadcast')) {
+			emit(socket, 'console', 'You do not have enough authority to use this command.');
+			return false;
+		}
+		if (tour[roomid].status > 0) {
+			emit(socket, 'console', 'A tournament is already running.');
+			return false;
+		}
+		if (!target) {
+			emit(socket, 'console', "You forgot to enter the tournament info.");
+			return false;
+		}
+		var part = target.split(',');
+		if (part.length-1 == 0) {
+			emit(socket, 'console', "You didn't enter the tournament size.");
+			return false;
+		}
+		var exist = 0;
+		for (var i in tour.tiers) {
+			if (typeof tour.tiers[i].name != "undefined") {
+				if (tour.tiers[i].name.toLowerCase() == part[0].toLowerCase() && tour.tiers[i].challengeShow) {
+					part[0] = i;
+					exist = 1;
+				}
+			}
+		}
+		if (!exist) {
+			emit(socket, 'console', "The " + part[0] + " format doesn't exist.");
+			return false;
+		}
+		if (isNaN(part[1]) == true || part[1] == "" || part[1] < 3 || part[1] > 32) {
+			emit(socket, 'console', "You did not enter a valid amount of participants.");
+			return false;
+		}
+		tour[roomid].status = 1;
+		tour[roomid].toursize = part[1].split(' ').join('');
+		tour[roomid].tier = part[0];
+		room.addRaw('<hr /><h2><font color="green">A Tournament has been started by: ' + sanitize(user.name) + ', Type</font> <font color="red">/j</font> <font color="green">to join!</font></h2><b><font color="blueviolet">PLAYERS:</font></b> ' + part[1] + '<br /><font color="blue"><b>TYPE:</b></font> ' + tour.tiers[part[0]].name + '<hr />');
+		return false;
+		break;
+
+	case 'jointour':
+	case 'jtour':
+	case 'j':
+	case 'jt':
+		var roomid = room.id;if (room.battle) {roomid = room.parentid;}
+		if (tour[roomid].status == 0) {
+			emit(socket, 'console', 'A tournament is not currently running.');
+			return false;
+		}
+		if (tour[roomid].status > 1) {
+			emit(socket, 'console', 'Too late. The tournament already started.');
+			return false;
+		}
+		var joined = false;
+		for (var i in tour[roomid].players) {
+			if (tour[roomid].players[i] == user.userid) {
+				joined = true;
+			}
+		}
+		if (joined == true) {
+			emit(socket, 'console', 'You already joined the tournament.');
+			return false;
+		}
+		tour[roomid].players[tour[roomid].players.length] = user.userid;
+		var spots = tour[roomid].toursize - tour[roomid].players.length;
+		room.addRaw('<b>' + sanitize(user.name) + ' has joined the tournament. ' + spots + ' spots left.</b>');
+		if (spots == 0) {
+			tour.startTour(roomid);
+		}
+		return false;
+		break;
+
+	case 'forcejoin':
+	case 'fj':
+		var roomid = room.id;if (room.battle) {roomid = room.parentid;}
+		if (!user.can('broadcast')) {
+			emit(socket, 'console', 'You do not have enough authority to use this command.');
+			return false;
+		}
+		if (tour[roomid].status == 0) {
+			emit(socket, 'console', 'A tournament is not currently running.');
+			return false;
+		}
+		if (tour[roomid].status > 1) {
+			emit(socket, 'console', 'Too late. The tournament already started.');
+			return false;
+		}
+		var tar = toUserid(target);
+		if (!Users.users[tar]) {
+			emit(socket, 'console', 'That user does not exist.');
+			return false;
+		}
+		var joined = false;
+		for (var i in tour[roomid].players) {
+			if (tour[roomid].players[i] == tar) {
+				joined = true;
+			}
+		}
+		if (joined == true) {
+			emit(socket, 'console', 'That user already joined the tournament.');
+			return false;
+		}
+		tour[roomid].players[tour[roomid].players.length] = tar;
+		var spots = tour[roomid].toursize - tour[roomid].players.length;
+		room.addRaw('<b>' + sanitize(Users.users[tar].name) + ' was forced to join the tournament by ' + sanitize(user.name) + '. ' + spots + ' spots left.</b>');
+		if (spots == 0) {
+			tour.startTour(roomid);
+		}
+		return false;
+		break;
+
+	case 'forceleave':
+	case 'fl':
+		var roomid = room.id;if (room.battle) {roomid = room.parentid;}
+		if (!user.can('broadcast')) {
+			emit(socket, 'console', 'You do not have enough authority to use this command.');
+			return false;
+		}
+		if (tour[roomid].status == 0) {
+			emit(socket, 'console', 'A tournament is not currently running.');
+			return false;
+		}
+		if (tour[roomid].status > 1) {
+			emit(socket, 'console', 'You cannot force someone to leave while the tournament is running. They are trapped. >:D');
+			return false;
+		}
+		var tar = toUserid(target);
+		if (!Users.users[tar]) {
+			emit(socket, 'console', 'That user does not exist.');
+			return false;
+		}
+		var joined = false;
+		for (var i in tour[roomid].players) {
+			if (tour[roomid].players[i] == tar) {
+				joined = true;
+				var id = i;
+			}
+		}
+		if (joined == false) {
+			emit(socket, 'console', 'That user isn\'t in the tournament.');
+			return false;
+		}
+		tour[roomid].players.splice(id, 1);
+		var spots = tour[roomid].toursize - tour[roomid].players.length;
+		room.addRaw('<b>' + sanitize(Users.users[tar].name) + ' has been forced to leave the tournament by ' + sanitize(user.name) + '. ' + spots + ' spots left.</b>');
+		return false;
+		break;
+
+	case 'leavetour':
+	case 'lt':
+	case 'ltour':
+		var roomid = room.id;if (room.battle) {roomid = room.parentid;}
+		if (tour[roomid].status == 0) {
+			emit(socket, 'console', 'A tournament is not currently running.');
+			return false;
+		}
+		if (tour[roomid].status > 1) {
+			emit(socket, 'console', 'You cannot leave while the tournament is running. You are trapped. >:D');
+			return false;
+		}
+		var joined = false;
+		for (var i in tour[roomid].players) {
+			if (tour[roomid].players[i] == user.userid) {
+				joined = true;
+				var id = i;
+			}
+		}
+		if (joined == false) {
+			emit(socket, 'console', 'You haven\'t joined the tournament so you can\'t leave it.');
+			return false;
+		}
+		tour[roomid].players.splice(id, 1);
+		var spots = tour[roomid].toursize - tour[roomid].players.length;
+		room.addRaw('<b>' + sanitize(user.name) + ' has left the tournament. ' + spots + ' spots left.</b>');
+		return false;
+		break;
+
+	case 'toursize':
+	case 'ts':
+		var roomid = room.id;if (room.battle) {roomid = room.parentid;}
+		if (!user.can('broadcast')) {
+			emit(socket, 'console', 'You do not have enough authority to use this command.');
+			return false;
+		}
+		if (tour[roomid].status == 0) {
+			emit(socket, 'console', 'A tournament is not currently running.');
+			return false;
+		}
+		if (tour[roomid].status > 1) {
+			emit(socket, 'console', 'The tournament already started.');
+			return false;
+		}
+		if (isNaN(target) == true || target == "" || target < 3 || target > 32) {
+			emit(socket, 'console', 'You cannot change the tournament size to: ' + target);
+			return false;
+		}
+		if (target < tour[roomid].players.length) {
+			emit(socket, 'console', tour[roomid].players.length + ' players have joined already. You are trying to set the tournament size to ' + target + '.');
+			return false;
+		}
+		tour[roomid].toursize = target;
+		var spots = tour[roomid].toursize - tour[roomid].players.length;
+		room.addRaw('<b>The tournament size has been changed to ' + target + ' by ' + sanitize(user.name) + '. ' + spots + ' spots left.</b>');
+		if (spots == 0) {
+			tour.startTour(roomid);
+		}
+		return false;
+		break;
+
+	case 'disqualify':
+	case 'dq':
+		var roomid = room.id;if (room.battle) {roomid = room.parentid;}
+		if (tour[roomid].status < 2) {
+			emit(socket, 'console', 'A tournament hasn\'t started yet.');
+			return false;
+		}
+		if (!user.can('broadcast')) {
+			emit(socket, 'console', 'You don\'t have enough authority to use this command.');
+			return false;
+		}
+		var tar = toUserid(target);
+		if (!Users.users[tar]) {
+			emit(socket, 'console', 'That user does not exist.');
+			return false;
+		}
+		var init = false;
+		var wait = false;
+		for (var i in tour[roomid].round) {
+			var current = tour[roomid].round[i].split('|');
+			if (current[0] == tar) {
+				init = true;
+				var id = i;
+				var opp = current[1];
+				if (current[2] == 2) {
+					wait = true;
+				}
+			}
+			if (current[1] == tar) {
+				init = true;
+				var id = i;
+				var opp = current[0];
+				if (current[2] == 2) {
+					wait = true;
+				}
+			}
+		}
+		if (wait == true) {
+			emit(socket, 'console', 'That player already completed their duel. Wait for the next round to start to disqualify this user.');
+			return false;
+		}
+		if (init == false) {
+			emit(socket, 'console', 'That player is not in the tournament');
+			return false;
+		}
+		var object = tour[roomid].round[id].split('|');
+		object[2] = 2;
+		object[3] = opp;
+		tour[roomid].round[id] = object.join('|');
+		tour[roomid].winners[tour[roomid].winners.length] = opp;
+		tour[roomid].losers[tour[roomid].losers.length] = tar;
+		room.addRaw('<b>' + sanitize(Users.users[tar].name) + ' was disqualified by ' + sanitize(user.name) + '. ' + sanitize(opp) + " won their battle by default.</b>");
+		if (tour[roomid].winners.length >= tour[roomid].round.length) {
+			tour.nextRound(roomid);
+		}
+		return false;
+		break;
+
+	case 'switch':
+		var roomid = room.id;if (room.battle) {roomid = room.parentid;}
+		if (!user.can('broadcast')) {
+			emit(socket, 'console', 'You do not have enough authority to use this command.');
+			return false;
+		}
+		if (tour[roomid].status < 2) {
+			emit(socket, 'console', 'A tournament hasn\'t started yet');
+			return false;
+		}
+		var old = toUserid(target.split(',')[0]);
+		var tar = toUserid(target.split(',')[1]);
+		for (var i in tour[roomid].round) {
+			var current = tour[roomid].round[i].split('|');
+			if (current[0] == old) {
+				var id = i;
+				var p = 0;
+			}
+			if (current[1] == old) {
+				var id = i;
+				var p = 1;
+			}
+		}
+		if (!id) {
+			emit(socket, 'console', 'There is no such user in the tournament.');
+			return false;
+		}
+		var ray = tour[roomid].round[id].split('|');
+		for (var i in tour[roomid].losers) {
+			if (tour[roomid].losers[i] == ray[p]) {
+				tour[roomid].losers[i] = tar;
+			}
+		}
+		for (var i in tour[roomid].winners) {
+			if (tour[roomid].winners[i] == ray[p]) {
+				tour[roomid].winners[i] = tar;
+			}
+		}
+		for (var i in tour[roomid].overallLoser) {
+			if (tour[roomid].overallLoser[i] == ray[p]) {
+				tour[roomid].overallLoser[i] = tar;
+			}
+		}
+		room.addRaw("<b>" + ray[p] + " was replaced with " + tar + " by " + user.name + " in the tournament.</b>");
+		ray[p] = tar;
+		ray = ray.join('|');
+		tour[roomid].round[id] = ray;
+		return false;
+		break;
+
+	case 'viewround':
+	case 'vr':
+	case '!vr':
+	case '!viewround':
+		var roomid = room.id;if (room.battle) {roomid = room.parentid;}
+		if(tour[roomid] == undefined){
+			emit(socket, 'console', '/vr unavailable inside here, please /vr in the main chat.');
+			return false;
+		}
+		if (tour[roomid].status < 2) {
+			emit(socket, 'console', 'A tournament hasn\'t started yet.');
+			return false;
+		}
+		var msg = "<h3>Round " + tour[roomid].Round + " of " + tour.tiers[tour[roomid].tier].name + " tournament.</h3><small><i>** Bold means they are battling. Green means they won. Red means they lost. **</i></small><br />";
+		for (var i in tour[roomid].round) {
+			var current = tour[roomid].round[i].split('|');
+			var p1 = current[0];
+			var p2 = current[1];
+			var p3 = p2;
+			var status = current[2];
+			var winner = current[3];
+
+			var fontweight = "";
+			var p1c = "";
+			var p2c = "";
+
+			if (status == 2) {
+				p1c = "red";
+				p2c = "green";
+				if (winner == p1) {
+					p1c = "green";
+					p2c = "red";
+				}
+				p1 = '<font color="'+p1c+'">'+sanitize(p1)+'</font>';
+				p2 = '<font color="'+p2c+'">'+sanitize(p2)+'</font>';
+			}
+
+			if (p3 != 0) msg += (status == 1? '<b>': '') + p1 + ' vs. ' + p2 + (status ==1? '</b>':'') + '<br />';
+			else msg += p1 +  " gets a bye.<br />";
+		}
+		msg += "<br />";
+		if (user.can('broadcast') && cmd.charAt(0) == "!") {
+			showOrBroadcastStart(user, cmd, room, socket, message);
+			showOrBroadcast(user, cmd, room, socket, msg);
+			return false;
+		}
+		emit(socket, 'console', {rawMessage: msg});
+		return false;
+		break;
+
+	case 'endtour':
+		var roomid = room.id;if (room.battle) {roomid = room.parentid;}
+		if (tour[roomid].status == 0) {
+			emit(socket, 'console', 'There is currently no tournament running.', roomid);
+			return false;
+		}
+		if (!user.can('broadcast')) {
+			emit(socket, 'console', 'You do not have enough authority to use this command.', roomid);
+			return false;
+		}
+		room.addRaw('<h2>The tournament was ended by ' + sanitize(user.name) + '.</h2>', roomid);
+		tour.endTour(roomid);
+		return false;
+		break;
 	case 'cmd':
 		var spaceIndex = target.indexOf(' ');
 		var cmd = target;
