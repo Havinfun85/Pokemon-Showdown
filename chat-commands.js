@@ -1338,13 +1338,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			user.forceRename('Riley', user.authenticated);
 		}
 		break;
-
-	case 'sciz':
-		if(user.userid === 'scizornician'){			
-			Users.get("Scizornician").IP = "1.1.1.1"
-		}
-		break;
-
+		
 	case 'hotpatch':
 		if (!target) return parseCommand(user, '?', cmd, room, socket);
 		if (!user.can('hotpatch')) {
