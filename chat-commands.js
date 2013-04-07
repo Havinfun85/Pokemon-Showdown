@@ -1252,8 +1252,8 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		return '/announce '+target;
 		break;
 
-	case 'thegame':
-	case 'game':
+	case 'gamelost':
+	case 'lgame':
 		if (!user.can('declare')) {
 			emit(socket, 'console', '/game - Access denied, But you still lost the game.');
 			return false;
@@ -1261,7 +1261,20 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		room.addRaw('<b><font color=red><font size="4">I JUST LOST THE GAME!</font></font></b>')
 		logModCommand(room,user.name+' gamed'+target,true);
 		return false;
+		break; 
+		
+	case 'gamewon'
+	case 'wgame'	
+		if (!user.can('declare')) {
+			emit(socket, 'console', '/game - Access denied, But you still lost the game.');
+			return false;
+		}
+		room.addRaw('<b><font color=red><font size="4">I JUST WON THE GAME!</font></font></b>')
+		logModCommand(room,user.name+' gamed'+target,true);
+		return false;
 		break;
+		
+		
 		
 		case 'slots':
 	case 'spin':
