@@ -212,7 +212,7 @@ exports.groups = {
 	},
 	'%': {
 		id: "tmod",
-		name: "Super Moderator",
+		name: "Trial Moderator",
 		inherit: '+',
 		jurisdiction: 'u',
 		announce: true,
