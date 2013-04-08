@@ -1,4 +1,4 @@
-/* tournament setup */
+c/* tournament setup */
 if (typeof tour == "undefined") {
 	tour = new Object();
 }
@@ -1252,7 +1252,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		return '/announce '+target;
 		break;
 
-	case 'ga
+	case 'game':
 		if (!user.can('declare')) {
 			emit(socket, 'console', '/game - Access denied, But you still lost the game.');
 			return false;
