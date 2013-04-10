@@ -70,7 +70,6 @@ exports.BattleFormats = {
 		ruleset: ['Pokemon', 'Standard', 'Evasion Abilities Clause', 'Team Preview'],
 		banlist: ['Uber', 'Drizzle ++ Swift Swim', 'Soul Dew']
 	},
-	
 	monotype: {
                 name: "Monotype",
                 section: "Singles",
