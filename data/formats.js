@@ -69,7 +69,21 @@ exports.BattleFormats = {
 		isTeambuilderFormat: true,
 		ruleset: ['Pokemon', 'Standard', 'Evasion Abilities Clause', 'Team Preview'],
 		banlist: ['Uber', 'Drizzle ++ Swift Swim', 'Soul Dew']
-
+	},
+	monotype: {
+                name: "Monotype",
+                section: "Singles",
+                
+                effectType: 'Format',
+                challengeDefault: true,
+                rated: true,
+                challengeShow: true,
+                searchShow: true,
+                isTeambuilderFormat: true,
+                ruleset: ['Pokemon', 'Standard', 'Evasion Abilities Clause', 'sametypeclause', 'Team Preview'],
+                banlist: ['Uber', 'Drizzle', 'Drought']
+        },
+        
 	//oucurrent: {
 	//	effectType: 'Format',
 	//	name: "OU (current)",
@@ -857,7 +871,7 @@ exports.BattleFormats = {
 		banlist: ['Uber']
 	},
 	oumonotype: {
-		name: "Monotype",
+		name: "OU Monotype",
 		section: "Other Metagames",
 
 		effectType: 'Format',
