@@ -1331,6 +1331,7 @@ exports.BattleFormats = {
 	},
 	sametypeclause: {
 		effectType: 'Rule',
+		name: 'Same Type Clause',
 		onStart: function() {
 			this.add('rule', 'Same Type Clause: Pokemon in a team must share a type');
 		},
