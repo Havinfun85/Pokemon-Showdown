@@ -108,6 +108,7 @@ exports.BattleFormats = {
 		// ] 
 		banlist: ['Uber', 'Drizzle ++ Swift Swim', 'Soul Dew', 'Deoxys-Defense']
 	},*/
+	},
 	cap: {
 		name: "CAP",
 		section: "Singles",
