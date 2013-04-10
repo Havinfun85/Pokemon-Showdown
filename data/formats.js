@@ -82,7 +82,7 @@ exports.BattleFormats = {
                 isTeambuilderFormat: true,
                 ruleset: ['Pokemon', 'Standard', 'Evasion Abilities Clause', 'Type Clause', 'Team Preview'],
                 banlist: ['Uber', 'Drizzle', 'Drought']
-        }
+        },
         
 	//oucurrent: {
 	//	effectType: 'Format',
