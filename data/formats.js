@@ -74,6 +74,7 @@ exports.BattleFormats = {
 	monotype: {
                 name: "Monotype",
                 section: "Singles",
+                
                 effectType: 'Format',
                 challengeDefault: true,
                 rated: true,
@@ -81,7 +82,7 @@ exports.BattleFormats = {
                 searchShow: true,
                 isTeambuilderFormat: true,
                 ruleset: ['Pokemon', 'Standard', 'Evasion Abilities Clause', 'Type Clause', 'Team Preview'],
-                banlist: ['Uber', 'Drizzle ++ Swift Swim']
+                banlist: ['Uber', 'Drizzle', 'Drought']
         }
         
 	//oucurrent: {
