@@ -2047,7 +2047,7 @@ exports.BattleFormatsData = {
 		],
 		dreamWorldRelease: true,
 		maleOnlyDreamWorld: true,
-		tier: "OU"
+		tier: "UU"
 	},
 	mudkip: {
 		viableMoves: {"waterfall":1,"earthpower":1,"superpower":1,"icebeam":1},
