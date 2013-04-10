@@ -69,21 +69,7 @@ exports.BattleFormats = {
 		isTeambuilderFormat: true,
 		ruleset: ['Pokemon', 'Standard', 'Evasion Abilities Clause', 'Team Preview'],
 		banlist: ['Uber', 'Drizzle ++ Swift Swim', 'Soul Dew']
-	},
-	monotype: {
-                name: "Monotype",
-                section: "Singles",
-                
-                effectType: 'Format',
-                challengeDefault: true,
-                rated: true,
-                challengeShow: true,
-                searchShow: true,
-                isTeambuilderFormat: true,
-                ruleset: ['Pokemon', 'Standard', 'Evasion Abilities Clause', 'sametypeclause', 'Team Preview'],
-                banlist: ['Uber', 'Drizzle', 'Drought']
-        },
-        
+
 	//oucurrent: {
 	//	effectType: 'Format',
 	//	name: "OU (current)",
@@ -857,6 +843,7 @@ exports.BattleFormats = {
 
 		effectType: 'Format',
 		challengeShow: true,
+		searchShow: true,
 		ruleset: ['NU'],
 		banlist: ["Charizard", "Wartortle", "Kadabra", "Golem", "Haunter", "Exeggutor", "Weezing", "Kangaskhan", "Pinsir", "Lapras", "Ampharos", "Misdreavus", "Piloswine", "Miltank", "Ludicolo", "Swellow", "Gardevoir", "Ninjask", "Torkoal", "Cacturne", "Altaria", "Armaldo", "Gorebyss", "Regirock", "Regice", "Bastiodon", "Floatzel", "Drifblim", "Skuntank", "Lickilicky", "Probopass", "Rotom-Fan", "Samurott", "Musharna", "Gurdurr", "Sawk", "Carracosta", "Garbodor", "Sawsbuck", "Alomomola", "Golurk", "Braviary", "Articuno", "Electabuzz", "Electrode", "Marowak", "Liepard", "Tangela", "Eelektross", "Ditto", "Seismitoad", "Zangoose", "Roselia", "Zebstrika", "Serperior", "Metang", "Tauros", "Torterra", "Cradily"]
 	},
@@ -871,11 +858,12 @@ exports.BattleFormats = {
 		banlist: ['Uber']
 	},
 	oumonotype: {
-		name: "OU Monotype",
+		name: "Monotype",
 		section: "Other Metagames",
 
 		effectType: 'Format',
 		challengeShow: true,
+		searchShow: true,
 		isTeambuilderFormat: true,
 		ruleset: ['Pokemon', 'Standard', 'Same Type Clause', 'Evasion Abilities Clause', 'Team Preview'],
 		banlist: ['Uber', 'Drizzle ++ Swift Swim', 'Soul Dew']
