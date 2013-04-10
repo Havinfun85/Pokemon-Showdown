@@ -1660,8 +1660,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			'- <a href="http://pokemondb.net/" target="_blank">Pokemon DB Main Site</a><br />'+
 			'- <a href="http://pokemondb.net/pokebase/chat" target="_blank">Pokemon DB Chat</a><br />'+
 			'- <a href="http://pokemondb.net/pokebase/" target="_blank"> Pokemon DB Pokebase (Q&A)</a><br />'+
-			'- <a href="http://pokemondb.net/pokebase/meta/28174/the-db-showdown-server-is-online-ban-reports-are-welcome" target="_blank" >Pokemon DB Mod List/Banned List</a><br />'+
-			'- <a href="http://pokemondb.net/pokebase/meta/27313/database-premier-league-finished-changing-signups-finished" target="_blank">Pokemon DB Premier League</a><br />'+
+			'- <a href="http://pokemondb.net/pokebase/meta/28174/the-pokemondb-showdown-server" target="_blank">DB Server Guide</a><br />'+
 			'</div>');
 		return false;
 		break;
