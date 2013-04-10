@@ -70,6 +70,20 @@ exports.BattleFormats = {
 		ruleset: ['Pokemon', 'Standard', 'Evasion Abilities Clause', 'Team Preview'],
 		banlist: ['Uber', 'Drizzle ++ Swift Swim', 'Soul Dew']
 	},
+	
+	monotype: {
+                name: "Monotype",
+                section: "Singles",
+                effectType: 'Format',
+                challengeDefault: true,
+                rated: true,
+                challengeShow: true,
+                searchShow: true,
+                isTeambuilderFormat: true,
+                ruleset: ['Pokemon', 'Standard', 'Evasion Abilities Clause', 'Type Clause', 'Team Preview'],
+                banlist: ['Uber', 'Drizzle ++ Swift Swim']
+        }
+        
 	//oucurrent: {
 	//	effectType: 'Format',
 	//	name: "OU (current)",
