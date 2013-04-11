@@ -892,7 +892,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		return false;
 		break;
 
-	case 'kick':
+        case 'kick':
 	case 'k':
 		// TODO: /kick will be removed in due course.
 		if (!target) return parseCommand(user, '?', cmd, room, socket);
