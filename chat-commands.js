@@ -1237,7 +1237,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			emit(socket, 'console', '/declare - Access denied.');
 			return false;
 		}
-		room.addRaw('<div class="broadcast-blue"><b>'+target+'</b></div>');
+		room.addRaw('<div class="broadcast-blue" style = "font-size 20px"><b>'+target+'</b></div>');
 		logModCommand(room,user.name+' declared '+target,true);
 		return false;
 		break;
