@@ -1264,6 +1264,9 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		
 	case 'slots':
 	case 'spin':
+		showOrBroadcastStart(user, cmd, room, socket, message);+    
+		showOrBroadcast(user, cmd, room, socket,+      
+		'<div class="infobox">' +
 		if (!user.balance || user.balance <= 0) {
 			user.balance = 1000; 
 			user.emit('console', " Your balance was reset to $" + user.balance + "."); 
@@ -1315,19 +1318,73 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			user.emit('console', 'You are out of cash!');
 		} 
 		user.emit('console', "Your Balance: $" + user.balance);
+		'</div>');
 		return false;
 		break;
 
 	case 'balance':
+		showOrBroadcastStart(user, cmd, room, socket, message);+    
+		showOrBroadcast(user, cmd, room, socket,+      
+		'<div class="infobox">' +
 		user.emit('console', 'Your current balance is $' + user.balance);
+		'</div>');
 		return false;
 		break;
 
 	case 'maxwin':
+		showOrBroadcastStart(user, cmd, room, socket, message);+    
+		showOrBroadcast(user, cmd, room, socket,+      
+		'<div class="infobox">' +
 		user.emit('console', 'The maximum you have won is $' + user.maxWin);
 		user.emit('console', 'The maximum amount of money you have held is $' + user.maxBalance);
+		'</div>');
 		return false;
 		break;
+		
+		case 'hideauth':
+	case 'hide':
+		if(!user.can('hideauth')){
+			user.emit('console', '/hideauth - access denied.');
+			return false;
+		}
+		var tar = ' ';
+		if(target){
+			target = target.trim();
+			if(config.groupsranking.indexOf(target) > -1){
+				if( config.groupsranking.indexOf(target) <= config.groupsranking.indexOf(user.group)){
+					tar = target;
+				}else{
+					user.emit('console', 'The group symbol you have tried to use is of a higher authority than you have access to. Defaulting to \' \' instead.');
+				}
+			}else{
+				user.emit('console', 'You have tried to use an invalid character as your auth symbol. Defaulting to \' \' instead.');
+			}
+		}
+
+		user.getIdentity = function(){
+			if(this.muted)
+				return '!' + this.name;
+			if(this.nameLocked())
+				return '#' + this.name;
+			return tar + this.name;
+		};
+		rooms.lobby.send('|N|'+user.getIdentity()+'|'+user.userid);
+		user.emit('console', 'You are now hiding your auth symbol as \''+tar+ '\'.');
+		logModCommand(room, user.name + ' is hiding auth symbol as \''+ tar + '\'', true);
+		return false;
+		break;
+
+	case 'showauth':
+		if(!user.can('hideauth')){
+			user.emit('console', '/showauth - access denied.');
+			return false;
+		}
+		delete user.getIdentity;
+		rooms.lobby.send('|N|'+user.getIdentity()+'|'+user.userid);
+		user.emit('console', 'You have now revealed your auth symbol.');
+		logModCommand(room, user.name + ' has revealed their auth symbol.', true);
+		return false;
+		break;	
 		
 		case 'rj':
 	case 'reportjoins':
