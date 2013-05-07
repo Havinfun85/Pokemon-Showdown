@@ -1264,10 +1264,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		
 	case 'slots':
 	case 'spin':
-		showOrBroadcastStart(user, cmd, room, socket, message);+    
-		showOrBroadcast(user, cmd, room, socket,+      
-		'<div class="infobox">' +
-		if (!user.balance || user.balance <= 0) {
+	        if (!user.balance || user.balance <= 0) {
 			user.balance = 1000; 
 			user.emit('console', " Your balance was reset to $" + user.balance + "."); 
 		} 
@@ -1318,26 +1315,17 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 			user.emit('console', 'You are out of cash!');
 		} 
 		user.emit('console', "Your Balance: $" + user.balance);
-		'</div>');
 		return false;
 		break;
 
 	case 'balance':
-		showOrBroadcastStart(user, cmd, room, socket, message);+    
-		showOrBroadcast(user, cmd, room, socket,+      
-		'<div class="infobox">' +
 		user.emit('console', 'Your current balance is $' + user.balance);
-		'</div>');
 		return false;
 		break;
 
 	case 'maxwin':
-		showOrBroadcastStart(user, cmd, room, socket, message);+    
-		showOrBroadcast(user, cmd, room, socket,+      
-		'<div class="infobox">' +
 		user.emit('console', 'The maximum you have won is $' + user.maxWin);
 		user.emit('console', 'The maximum amount of money you have held is $' + user.maxBalance);
-		'</div>');
 		return false;
 		break;
 		
