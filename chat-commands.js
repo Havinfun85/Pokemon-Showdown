@@ -1329,7 +1329,7 @@ function parseCommandLocal(user, cmd, target, room, socket, message) {
 		return false;
 		break;
 		
-		case 'hideauth':
+	case 'hideauth':
 	case 'hide':
 		if(!user.can('hideauth')){
 			user.emit('console', '/hideauth - access denied.');
